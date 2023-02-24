@@ -1,0 +1,85 @@
+do{
+    if (BUTTON_PIN[0]== HIGH)
+    {
+      music1[number_note_1]=0;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[1]== HIGH)
+    {
+      music1[number_note_1]=1;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[2]== HIGH)
+    {
+      music1[number_note_1]=2;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[3]== HIGH)
+    {
+      music1[number_note_1]=3;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[4]== HIGH)
+    {
+      music1[number_note_1]=4;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[5]== HIGH)
+    {
+      music1[number_note_1]=5;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[0]== HIGH)
+    {
+      music1[number_note_1]=0;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[6]== HIGH)
+    {
+      music1[number_note_1]=6;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[7]== HIGH)
+    {
+      music1[number_note_1]=7;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[8]== HIGH)
+    {
+      music1[number_note_1]=8;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[9]== HIGH)
+    {
+      music1[number_note_1]=9;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[10]== HIGH)
+    {
+      music1[number_note_1]=10;
+      number_note_1 ++;
+    }
+    if (BUTTON_PIN[11]== HIGH)
+    {
+      music1[number_note_1]=11;
+      number_note_1 ++;
+    }
+    
+  }while (BUTTON_PIN[0]==HIGH && BUTTON_PIN[1]==HIGH );
+
+
+
+  // kiểm tra thời gian
+  while (recording) {
+    // Kiểm tra xem đã quá thời gian chưa
+    if (millis() - lastPressedTime > MAX_WAIT_TIME) {
+      recording = false;
+    }
+  }
+  // Kiểm tra nút nào được bấm
+  for (int i = 0; i < 12; i++) {
+    if (digitalRead(BUTTON_PIN[i]) == HIGH) {
+      melody1[melodyIndex++] = i; // Lưu nút được bấm vào mảng nhạc
+      lastPressedTime = millis(); // Cập nhật thời gian lần cuối mà có sự kiện bấm nút
+    }
+  }
