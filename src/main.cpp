@@ -1,6 +1,33 @@
 #include<Arduino.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include<BLEServer.h>
+#include <BLE2902.h>
+BLEServer* pServer = NULL;
+BLECharacteristic* pCharacteristic = NULL;
+BLEDescriptor *pDescr;
+BLE2902 *pBLE2902;
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+uint32_t value = 0;
+#define SERVICE_UUID "dd1a54fe-d993-452e-99de-4159d4d4e17e"
+#define CHARACTERISTIC_UUID "c3ae4e02-a1ac-47ea-9da2-5fd3cf42ae41"
+
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+      deviceConnected = true;
+    };
+
+    void onDisconnect(BLEServer* pServer) {
+      deviceConnected = false;
+    }
+};
+
+
+
 TaskHandle_t Task1;
 TaskHandle_t Task2;
+
 
 #define SoluongNote 42
 const int music[]={0,0,7,7,9,9,7,5,5,4,4,2,2,0,7,7,5,5,4,4,2,7,7,5,5,4,4,2,0,0,7,7,9,9,7,5,5,4,4,2,2,0};
@@ -108,6 +135,46 @@ void playmelody(void *par ){
 
 
 void setup() {
+
+  Serial.begin(115200);
+
+  
+  BLEDevice::init("PianoMini_TeamOne");
+
+  
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  
+  pCharacteristic = pService->createCharacteristic(
+                      CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_NOTIFY
+                    );                   
+
+  
+  
+  pDescr = new BLEDescriptor((uint16_t)0x2901);
+  pDescr->setValue("A very interesting variable");
+  pCharacteristic->addDescriptor(pDescr);
+  
+  pBLE2902 = new BLE2902();
+  pBLE2902->setNotifications(true);
+  pCharacteristic->addDescriptor(pBLE2902);
+
+  
+  pService->start();
+
+  
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(false);
+  pAdvertising->setMinPreferred(0x0);  
+  BLEDevice::startAdvertising();
+  
+
   for (int i = 0; i < 12; i++)
   {
     pinMode(BUTTON_PIN[i],INPUT);
@@ -122,6 +189,27 @@ void setup() {
 
 
 void loop() {
+
+  
+    if (deviceConnected) {
+        pCharacteristic->setValue(value);
+        pCharacteristic->notify();
+        value++;
+        delay(1000);
+    }
+
+    if (!deviceConnected && oldDeviceConnected) {
+        delay(500); 
+        pServer->startAdvertising(); // restart advertising
+
+        oldDeviceConnected = deviceConnected;
+    }
+
+    if (deviceConnected && !oldDeviceConnected) {
+
+        oldDeviceConnected = deviceConnected;
+    }
+
   button0State = digitalRead(BUTTON_PIN[0]);
   button11State = digitalRead(BUTTON_PIN[11]);
   button1State = digitalRead(BUTTON_PIN[1]);
