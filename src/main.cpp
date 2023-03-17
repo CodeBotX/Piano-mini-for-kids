@@ -3,8 +3,6 @@
 TaskHandle_t Task1;
 TaskHandle_t Task2;
 
-int melody1[1000];
-int melody1Index=0;
 
 // bai hat huong dan mac dinh
 #define SoluongNote 42
@@ -14,12 +12,13 @@ const int BUTTON_PIN[]={21,22,23,25,26,27,32,33,35,34,36,39};
 // khai bao chan loa
 #define BUZZER_PIN 15
 
+// khai bao tan so note nhac
 const float NOTE[]={261.6256,277.1826,293.6648,311.1270,329.6276,349.2282,369.9944,391.9954,415.3047,440,466.1638,493.8833};
 // C-0, C#-1, D-2, D#-3, E-4, F-5, F#-6, G-7, G#-8, A-9, A#-10, B-11
 
 #define Duration 400 // do tre am thanh
-// khai bao chan nut
-const int LedPin[]={2,4,16,17,5,18,3,1,19,13,12,14};
+// khai bao chan led
+const int Led_Pins[]={2,4,16,17,5,18,3,1,19,13,12,14};
 
 bool button0State = false;
 bool button11State = false;
@@ -30,44 +29,46 @@ bool button4State = false;
 
 #define LED_COUNT 12
 
-// Hàm hướng dẫn chơi nhạc //
+// Hàm nháy led hướng dẫn chơi nhạc //
 void LedBlink( void *par ){
 
-  for (int repeat = 0; repeat < 3; repeat++) {
+  for (int k = 0; k < 3; k++) {
     // Led sáng lên từ bóng 1 đến bóng 12
     for (int i = 0; i < LED_COUNT; i++) {
-      digitalWrite(LedPin[i], HIGH);
-      delay(43); // 1000ms / 12 LEDs = 83ms/LED
+      digitalWrite(Led_Pins[i], HIGH);
+      delay(43); // 500ms / 12 LEDs = 43ms/LED
     }
     // Led tắt từ bóng 1 đến bóng 12
     for (int i = 0; i < LED_COUNT; i++) {
-      digitalWrite(LedPin[i], LOW);
-      delay(43); // 1000ms / 12 LEDs = 83ms/LED
+      digitalWrite(Led_Pins[i], LOW);
+      delay(43); // 500ms / 12 LEDs = 43ms/LED
     }
   }
 
   // Tất cả các LED cùng sáng trong 0.5s rồi tắt đi
   for (int i = 0; i < LED_COUNT; i++) {
-    digitalWrite(LedPin[i], HIGH);
+    digitalWrite(Led_Pins[i], HIGH);
   }
+  // sau 0.5s bắt đầu hướng dẫn chơi nhạc
   delay(500);
   for (int i = 0; i < LED_COUNT; i++) {
-    digitalWrite(LedPin[i], LOW);
+    digitalWrite(Led_Pins[i], LOW);
   }
   delay(1000);
 
+
+  // biến i là chỉ số của music[i], giá trị của music[i] là chỉ số của Led_Pins[]
+
   for (int i = 0; i < SoluongNote ; i++)
   {
-    digitalWrite(LedPin[music[i]],HIGH);
-    delay(400);
-    digitalWrite(LedPin[music[i]],LOW);
+    digitalWrite(Led_Pins[music[i]],HIGH);
+    delay(1000);
+    digitalWrite(Led_Pins[music[i]],LOW);
   }
   
 }
-
+// setup các chân
 void setup() {
-
-  Serial.begin(115200);
 
   for (int i = 0; i < 12; i++)
   {
@@ -77,7 +78,7 @@ void setup() {
   pinMode(BUZZER_PIN, OUTPUT);
   for (int i = 0; i < 12; i++)
   {
-    pinMode(LedPin[i],OUTPUT);
+    pinMode(Led_Pins[i],OUTPUT);
   }
 }
 
@@ -88,14 +89,13 @@ void loop() {
   button0State = digitalRead(BUTTON_PIN[0]);
   button1State = digitalRead(BUTTON_PIN[1]);
 
-
-  // Nếu bấm phím 1 and 2 thì gọi hàm hướng dẫn ( core 2 )
+  // Nếu bấm phím 1 and 2 thì gọi hàm hướng dẫn ( core 1 )
   if (button0State==true && button1State==true) {
     delay(2000);
     xTaskCreatePinnedToCore(LedBlink,"Task1",10000,NULL,1,&Task1,1);
   }
   
-  // cài đặt các phím đàn ( core 1 )
+  // cài đặt các phím đàn ( core 0 )
 
   if (digitalRead(BUTTON_PIN[0]) == HIGH) {
     tone(BUZZER_PIN,NOTE[0]);
