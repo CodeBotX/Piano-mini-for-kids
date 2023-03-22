@@ -1,5 +1,5 @@
 #include<Arduino.h>
-
+// khởi tạo tác vụ
 TaskHandle_t Task1;
 TaskHandle_t Task2;
 
